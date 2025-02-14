@@ -2,7 +2,7 @@ import MobileNavigation from '@/components/MobileNavigation';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import React from 'react';
-import { getCurrentUser } from '@/lib/actions/user.action';
+import { getCurrentUser } from '@/lib/actions/user.actions';
 import { redirect } from 'next/navigation';
 
 const Layout = async ({ children }: { children: React.ReactNode }) => {
