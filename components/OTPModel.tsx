@@ -1,27 +1,27 @@
-import React, { useState } from 'react';
+"use client";
+
 import {
   AlertDialog,
   AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { Button } from './ui/button';
+} from "@/components/ui/alert-dialog";
+
 import {
   InputOTP,
   InputOTPGroup,
-  InputOTPSeparator,
   InputOTPSlot,
-} from '@/components/ui/input-otp';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { verifySecrect ,sendEmailOTP} from '@/lib/actions/user.action';
+} from "@/components/ui/input-otp";
+import React, { useState } from "react";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { verifySecret, sendEmailOTP } from "@/lib/actions/user.action";
+import { useRouter } from "next/navigation";
 
-const OtpModel = ({
+const OtpModal = ({
   accountId,
   email,
 }: {
@@ -30,26 +30,30 @@ const OtpModel = ({
 }) => {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(true);
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setIsLoading(true);
 
-    try {
-      // Call API for Verify the OTP
-      const sessionId = await verifySecrect({ accountId, password });
+    console.log({ accountId, password });
 
-      if (sessionId) router.push('/');
+    try {
+      const sessionId = await verifySecret({ accountId, password });
+
+      console.log({ sessionId });
+
+      if (sessionId) router.push("/");
     } catch (error) {
-      console.log('Failed to verify the OTP', error);
+      console.log("Failed to verify OTP", error);
     }
+
     setIsLoading(false);
   };
 
   const handleResendOtp = async () => {
-    await sendEmailOTP ({email})
+    await sendEmailOTP({ email });
   };
 
   return (
@@ -67,11 +71,12 @@ const OtpModel = ({
               className="otp-close-button"
             />
           </AlertDialogTitle>
-          <AlertDialogDescription className="subtitle-2 text-center text-light-100 ">
-            We've sent a code to{' '}
+          <AlertDialogDescription className="subtitle-2 text-center text-light-100">
+            We&apos;ve sent a code to{" "}
             <span className="pl-1 text-brand">{email}</span>
           </AlertDialogDescription>
         </AlertDialogHeader>
+
         <InputOTP maxLength={6} value={password} onChange={setPassword}>
           <InputOTPGroup className="shad-otp">
             <InputOTPSlot index={0} className="shad-otp-slot" />
@@ -88,7 +93,8 @@ const OtpModel = ({
             <AlertDialogAction
               onClick={handleSubmit}
               className="shad-submit-btn h-12"
-              type="button">
+              type="button"
+            >
               Submit
               {isLoading && (
                 <Image
@@ -100,22 +106,23 @@ const OtpModel = ({
                 />
               )}
             </AlertDialogAction>
+
             <div className="subtitle-2 mt-2 text-center text-light-100">
-              Did't get a code?{' '}
+              Didn&apos;t get a code?
               <Button
                 type="button"
                 variant="link"
                 className="pl-1 text-brand"
-                onClick={handleResendOtp}>
-                Click to Send
+                onClick={handleResendOtp}
+              >
+                Click to resend
               </Button>
             </div>
           </div>
-          {/* <AlertDialogCancel>Cancel</AlertDialogCancel> */}
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
 };
 
-export default OtpModel;
+export default OtpModal;

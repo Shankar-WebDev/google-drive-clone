@@ -6,6 +6,7 @@ import { Query, ID } from 'node-appwrite';
 import { parseStringify } from '../utils';
 import { cookies } from 'next/headers';
 import { avatarPlaceholderUrl } from '@/constants';
+import { redirect } from 'next/navigation';
 
 const getUserByEmail = async (email: string) => {
   const { databases } = await createAdminClient();
@@ -19,8 +20,8 @@ const getUserByEmail = async (email: string) => {
 };
 
 const handleError = (error: unknown, message: string) => {
-  // console.log(error.message);
-  throw error;
+  console.error(message, error); // Log for debugging
+  throw new Error(`${message}: ${error instanceof Error ? error.message : 'Unknown error'}`);
 };
 
 export const sendEmailOTP = async ({ email }: { email: string }) => {
@@ -30,6 +31,7 @@ export const sendEmailOTP = async ({ email }: { email: string }) => {
     return session.userId;
   } catch (error) {
     handleError(error, 'Failed to send email OTP');
+    return null;  // Optional: Return null if OTP sending fails
   }
 };
 
@@ -64,7 +66,7 @@ export const createAccount = async ({
   return parseStringify({ accountId });
 };
 
-export const verifySecrect = async ({
+export const verifySecret = async ({
   accountId,
   password,
 }: {
@@ -74,33 +76,43 @@ export const verifySecrect = async ({
   try {
     const { account } = await createAdminClient();
 
-    const session = await account.createSession(accountId,password);
-    (await cookies()).set('appwrite-session',session.secret, {
-      path:'/',
-      httpOnly:true,
-      sameSite:'strict',
-      secure:true
-    })
-    return parseStringify({sessionId:session.$id})
+    const session = await account.createSession(accountId, password);
+    (await cookies()).set('appwrite-session', session.secret, {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: true,
+    });
+    return parseStringify({ sessionId: session.$id });
   } catch (error) {
     handleError(error, 'Failed to Verify OTP');
   }
 };
 
-
-export  const getCurrentUser = async() =>{
-  const {databases, account} =await createSessionClient();
+export const getCurrentUser = async () => {
+  const { databases, account } = await createSessionClient();
   const result = await account.get();
-
 
   const user = await databases.listDocuments(
     appwriteConfig.databaseId,
     appwriteConfig.usersCollectionId,
-    [Query.equal("accountId",result.$id)]
+    [Query.equal('accountId', result.$id)]
   );
 
-  if(user.total<= 0) return null;
+  if (user.total <= 0) return null;
 
+  return parseStringify(user.documents[0]);
+};
 
-  return parseStringify(user.documents[0])
-}
+export const signOutUser = async () => {
+  const { account } = await createSessionClient();
+  try {
+    await account.deleteSession('current');
+    (await cookies()).delete('appwrite-session');
+  } catch (error) {
+    handleError(error, 'Failed to sign out User');
+  } finally {
+    // Redirect after performing actions to ensure session and cookie deletion
+    redirect('/sign-in');
+  }
+};
