@@ -1,10 +1,11 @@
 'use server';
 
-import { createAdminClient } from '@/lib/appwrite';
+import { createAdminClient, createSessionClient } from '@/lib/appwrite';
 import { appwriteConfig } from '../appwrite/config';
 import { Query, ID } from 'node-appwrite';
 import { parseStringify } from '../utils';
 import { cookies } from 'next/headers';
+import { avatarPlaceholderUrl } from '@/constants';
 
 const getUserByEmail = async (email: string) => {
   const { databases } = await createAdminClient();
@@ -54,8 +55,7 @@ export const createAccount = async ({
       {
         fullName,
         email,
-        // avatar:
-        //   'https://www.iconfinder.com/icons/403017/avatar_default_head_person_unknown_user_anonym_icon',
+        avatar: avatarPlaceholderUrl,
         accountId,
       }
     );
@@ -86,3 +86,21 @@ export const verifySecrect = async ({
     handleError(error, 'Failed to Verify OTP');
   }
 };
+
+
+export  const getCurrentUser = async() =>{
+  const {databases, account} =await createSessionClient();
+  const result = await account.get();
+
+
+  const user = await databases.listDocuments(
+    appwriteConfig.databaseId,
+    appwriteConfig.usersCollectionId,
+    [Query.equal("accountId",result.$id)]
+  );
+
+  if(user.total<= 0) return null;
+
+
+  return parseStringify(user.documents[0])
+}
