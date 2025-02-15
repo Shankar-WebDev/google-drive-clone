@@ -3,7 +3,7 @@ import { Models } from 'node-appwrite';
 import Link from 'next/link';
 import Thumbnail from './Thumbnail';
 import { convertFileSize } from '@/lib/utils';
-import FormatedDateTime from './FormatedDateTime';
+import FormattedDateTime from './FormatedDateTime';
 import ActionDropoDown from './ActionDropoDown';
 
 interface CardProps {
@@ -28,7 +28,7 @@ const Card: React.FC<CardProps> = ({ file }) => {
       </div>
       <div className="file-card-details">
         <p className="subtitle-2 line-clamp-1">{file.name}</p>
-        <FormatedDateTime
+        <FormattedDateTime
           date={file.$createdAt}
           className="body-2 text-light-100"
         />
