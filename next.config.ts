@@ -1,6 +1,12 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '100MB',
+    },
+  },
+
   images: {
     remotePatterns: [
       {
@@ -13,7 +19,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'img.freepik.com',  // Add this line
+        hostname: 'img.freepik.com', // Add this line
       },
     ],
   },
