@@ -39,7 +39,7 @@ export const uploadFile = async ({
       size: bucketFile.sizeOriginal,
       owner: ownerId,
       accountId,
-      users: [],
+      users: "",
       bucketFileId: bucketFile.$id,
     };
 
