@@ -8,7 +8,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from '@/components/ui/dialog';
 
 import {
   DropdownMenu,
@@ -18,7 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
- import { Input } from './ui/input';
+import { Input } from './ui/input';
 
 import Image from 'next/image';
 import { Models } from 'node-appwrite';
@@ -26,50 +26,74 @@ import { actionsDropdownItems } from '@/constants';
 import { constructDownloadUrl } from '@/lib/utils';
 import Link from 'next/link';
 import { Button } from './ui/button';
+import { usePathname } from 'next/navigation';
+import { renameFile } from '@/lib/actions/file.actions';
 
 const ActionDropoDown = ({ file }: { file: Models.Document }) => {
   const [isModelOpen, setIsModelOpen] = useState(false);
   const [isDropDownOpen, setIsDropdownOpen] = useState(false);
   const [action, setAction] = useState<ActionType | null>(null);
-  const [name,setName] = useState(file.name)
-  const [isLoading,setIsLoading] = useState(false)
+  const [name, setName] = useState(file.name);
+  const [isLoading, setIsLoading] = useState(false);
 
-
-  const closeAllModels = () =>{
+  const path = usePathname();
+  const closeAllModels = () => {
     setIsModelOpen(false);
     setIsDropdownOpen(false);
     setAction(null);
-    setName(file.name)
+    setName(file.name);
     //setEmail([])
-  }
+  };
 
+  const handleAction = async () => {
+    if (!action) return;
+    setIsLoading(true);
+    let success = false;
+    const actions = {
+      rename: () =>
+        renameFile({ fileId: file.$id, name, extension: file.extension, path }),
+      share: () => console.log('share'),
+      delete: () => console.log('delete'),
+    };
 
-  const handleAction = async() =>{}
+    success = await actions[action.value as keyof typeof actions]();
+    if (success) closeAllModels();
+    setIsLoading(false)
+  };
 
   const renderDialogContent = () => {
+    if (!action) return null;
 
-    if(!action) return null
-
-    const {value, label} = action
+    const { value, label } = action;
     return (
-      <DialogContent className='shad-dialog button'>
-        <DialogHeader className='flex flex-col gap-2'>
-          <DialogTitle className='text-center text-light-100'>
+      <DialogContent className="shad-dialog button">
+        <DialogHeader className="flex flex-col gap-2">
+          <DialogTitle className="text-center text-light-100">
             {label}
           </DialogTitle>
-         {value === 'rename' &&(
-          <Input type='text' value={name} onChange={(e) => setName(e.target.value)}/>
-         )}
+          {value === 'rename' && (
+            <Input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          )}
         </DialogHeader>
-        {['rename','delete','share'].includes(value) &&(
-          <DialogFooter className='flex felx-col gap-3 md:flex-row'>
-            <Button onClick={closeAllModels} className='modal-cancel-button'>
+        {['rename', 'delete', 'share'].includes(value) && (
+          <DialogFooter className="flex felx-col gap-3 md:flex-row">
+            <Button onClick={closeAllModels} className="modal-cancel-button">
               Cancel
             </Button>
-            <Button onClick={handleAction} className='modal-submit-button'>
-              <p className='capitailize'> {value}</p>
+            <Button onClick={handleAction} className="modal-submit-button">
+              <p className="capitailize"> {value}</p>
               {isLoading && (
-                <Image src="/assets/icons/loader.svg" alt='loader' width={24} height={24} className='animate-spin'/>
+                <Image
+                  src="/assets/icons/loader.svg"
+                  alt="loader"
+                  width={24}
+                  height={24}
+                  className="animate-spin"
+                />
               )}
             </Button>
           </DialogFooter>
